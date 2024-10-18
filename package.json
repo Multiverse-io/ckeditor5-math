@@ -1,6 +1,6 @@
 {
   "name": "@multiverse-io/ckeditor5-math",
-  "version": "43.2.0",
+  "version": "43.2.0-next.0",
   "description": "Math feature for CKEditor 5.",
   "keywords": [
     "ckeditor",
@@ -12,6 +12,9 @@
     "ckeditor5-math",
     "katex"
   ],
+  "publishConfig": {
+    "@multiverse-io:registry": "https://npm.pkg.github.com"
+  },
   "type": "module",
   "main": "dist/index.ts",
   "module": "dist/index.js",
