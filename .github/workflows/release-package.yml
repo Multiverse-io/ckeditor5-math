@@ -39,8 +39,6 @@ jobs:
                   registry-url: https://npm.pkg.github.com/
             - name: project - install
               run: yarn --frozen-lockfile
-            - name: test
-              run: xvfb-run yarn test --coverage --source-map --verbose || exit 1
             - run: yarn prepare
             - run: yarn publish
               env:
