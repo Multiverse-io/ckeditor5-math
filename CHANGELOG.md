@@ -4,6 +4,11 @@
 
 -   Add latest changes here
 
+## [v43.2.0-next.0](https://github.com/Multiverse-io/ckeditor5-math/compare/v43.2.0...v43.2.0-next.0) (2024-10-21)
+
+-   Bootstrap CI
+-   Add support for the new installation method for custom plugins.
+
 ## [43.2.0](https://github.com/isaul32/ckeditor5-math/compare/v43.1.2...v43.2.0) (2024-10-14)
 
 -   Update dependencies for CKEditor 43.2.0 ([Release
