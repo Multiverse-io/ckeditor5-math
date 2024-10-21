@@ -4,6 +4,10 @@
 
 -   Add latest changes here
 
+## [v43.2.0-next.1](https://github.com/Multiverse-io/ckeditor5-math/compare/v43.2.0-next.0...v43.2.0-next.1) (2024-10-21)
+
+-   Fixes `CKEditorError: observable-set-cannot-override` error. See - https://ckeditor.com/docs/ckeditor5/latest/support/error-codes.html#error-observable-set-cannot-override
+
 ## [v43.2.0-next.0](https://github.com/Multiverse-io/ckeditor5-math/compare/v43.2.0...v43.2.0-next.0) (2024-10-21)
 
 -   Bootstrap CI
