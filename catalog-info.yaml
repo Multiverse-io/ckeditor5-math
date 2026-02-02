@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ckeditor5-math
+  description: Math feature for CKEditor 5.
+  annotations:
+    github.com/project-slug: Multiverse-io/ckeditor5-math
+    backstage.io/techdocs-ref: dir:.
+  tags:
+    - typescript
+    - ckeditor5
+  links:
+    - title: GitHub
+      url: https://github.com/Multiverse-io/ckeditor5-math
+spec:
+  type: library
+  owner: lobsters
+  lifecycle: production
