@@ -60,6 +60,9 @@
   "peerDependencies": {
     "ckeditor5": ">=43.2.0 || ^0.0.0-nightly"
   },
+  "resolutions": {
+    "tar": "^7.5.3"
+  },
   "scripts": {
     "build:dist": "node ./scripts/build-dist.mjs",
     "ts:build": "tsc -p ./tsconfig.release.json",
