@@ -76,7 +76,8 @@
     "brace-expansion": ">=2.0.2",
     "debug": ">=3.2.7",
     "diff": ">=4.0.4",
-    "minimatch": ">=3.0.5"
+    "minimatch": ">=3.0.5",
+    "@babel/helpers": ">=7.26.10"
   },
   "scripts": {
     "build:dist": "node ./scripts/build-dist.mjs",
