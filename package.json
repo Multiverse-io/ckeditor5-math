@@ -71,7 +71,12 @@
     "tmp": ">=0.2.4",
     "on-headers": ">=1.1.0",
     "webpack-dev-server": ">=5.2.1",
-    "http-proxy-middleware": ">=2.0.8"
+    "http-proxy-middleware": ">=2.0.8",
+    "cross-spawn": ">=7.0.5",
+    "brace-expansion": ">=2.0.2",
+    "debug": ">=3.2.7",
+    "diff": ">=4.0.4",
+    "minimatch": ">=3.0.5"
   },
   "scripts": {
     "build:dist": "node ./scripts/build-dist.mjs",
