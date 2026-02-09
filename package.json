@@ -61,7 +61,8 @@
     "ckeditor5": ">=43.2.0 || ^0.0.0-nightly"
   },
   "resolutions": {
-    "tar": "^7.5.3"
+    "tar": "^7.5.3",
+    "webpack": ">=5.104.1"
   },
   "scripts": {
     "build:dist": "node ./scripts/build-dist.mjs",
