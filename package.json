@@ -73,13 +73,12 @@
     "webpack-dev-server": "^5.2.1",
     "http-proxy-middleware": "^3.0.5",
     "cross-spawn": "^7.0.5",
-    "brace-expansion": "^4.0.1",
-    "debug": "^4.4.3",
-    "diff": "^8.0.3",
-    "minimatch": "^10.1.2",
     "@babel/helpers": "^7.26.10",
     "rollup": "^4.59.0",
-    "flatted": "^3.4.2"
+    "flatted": "^3.4.2",
+    "**/mocha/debug": ">=3.2.7 <4",
+    "**/mocha/diff": ">=3.5.1 <4",
+    "**/mocha/minimatch": ">=3.0.5 <4"
   },
   "scripts": {
     "build:dist": "node ./scripts/build-dist.mjs",
