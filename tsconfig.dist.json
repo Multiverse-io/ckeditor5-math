@@ -4,8 +4,12 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "rootDir": "./src",
+    "outDir": "./dist",
     "types": [
-      "./typings/types"
+      "types"
     ]
-  }
+  },
+  "include": [
+    "./src"
+  ]
 }

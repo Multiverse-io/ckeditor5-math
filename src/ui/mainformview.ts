@@ -1,5 +1,6 @@
 import {
-	icons,
+	IconCheck,
+	IconCancel,
 	ButtonView,
 	createLabeledInputText,
 	FocusCycler,
@@ -20,7 +21,8 @@ import MathView from './mathview.js';
 import '../../theme/mathform.css';
 import type { KatexOptions } from '../typings-external.js';
 
-const { check: checkIcon, cancel: cancelIcon } = icons;
+const checkIcon = IconCheck;
+const cancelIcon = IconCancel;
 
 class MathInputView extends LabeledFieldView<InputTextView> {
 	public value: null | string = null;

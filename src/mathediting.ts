@@ -4,8 +4,8 @@ import {
 	toWidget,
 	Widget,
 	viewToModelPositionOutsideModelElement,
-	type DowncastWriter,
-	type Element,
+	type ViewDowncastWriter,
+	type ModelElement,
 	CKEditorError,
 	uid
 } from 'ckeditor5';
@@ -212,8 +212,8 @@ export default class MathEditing extends Plugin {
 
 		// Create view for editor
 		function createMathtexEditingView(
-			modelItem: Element,
-			writer: DowncastWriter
+			modelItem: ModelElement,
+			writer: ViewDowncastWriter
 		) {
 			const equation = String( modelItem.getAttribute( 'equation' ) );
 			const display = !!modelItem.getAttribute( 'display' );
@@ -262,8 +262,8 @@ export default class MathEditing extends Plugin {
 
 		// Create view for data
 		function createMathtexView(
-			modelItem: Element,
-			{ writer }: { writer: DowncastWriter }
+			modelItem: ModelElement,
+			{ writer }: { writer: ViewDowncastWriter }
 		) {
 			const equation = modelItem.getAttribute( 'equation' );
 			if ( typeof equation != 'string' ) {
