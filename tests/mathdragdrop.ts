@@ -270,3 +270,191 @@ describe( 'Math - drag and drop', () => {
 		} );
 	} );
 } );
+
+describe( 'Math - outputType and forceOutputType', () => {
+	describe( 'with outputType: "span", forceOutputType: true', () => {
+		let editorElement: HTMLDivElement, editor: ClassicEditor;
+
+		beforeEach( async () => {
+			editorElement = document.createElement( 'div' );
+			document.body.appendChild( editorElement );
+
+			editor = await ClassicEditor.create( editorElement, {
+				plugins: [ Mathematics, Typing, Paragraph, Undo ],
+				math: {
+					engine: ( equation: string, element: HTMLElement, display: boolean ) => {
+						if ( display ) {
+							element.innerHTML = '\\[' + equation + '\\]';
+						} else {
+							element.innerHTML = '\\(' + equation + '\\)';
+						}
+					},
+					outputType: 'span',
+					forceOutputType: true
+				}
+			} );
+		} );
+
+		afterEach( () => {
+			editorElement.remove();
+			return editor.destroy();
+		} );
+
+		it( 'should downcast inline math as span with math-tex class', () => {
+			setData( editor.model,
+				'<paragraph>[<mathtex-inline display="false" equation="a+b" type="span">' +
+				'</mathtex-inline>]</paragraph>'
+			);
+
+			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
+			const viewContent = editor.data.toView( selectedContent );
+			const html = editor.data.processor.toData( viewContent );
+
+			expect( html ).to.include( 'math-tex' );
+			expect( html ).to.include( '\\(a+b\\)' );
+			expect( html ).to.not.include( '<script' );
+		} );
+
+		it( 'should force span output type on upcast from script tags', () => {
+			editor.data.set(
+				'<p><script type="math/tex">x^2</script></p>'
+			);
+
+			const result = getData( editor.model );
+			expect( result ).to.include( 'mathtex-inline' );
+			expect( result ).to.include( 'equation="x^2"' );
+			expect( result ).to.include( 'type="span"' );
+		} );
+
+		it( 'should preserve span math through clipboard roundtrip', () => {
+			setData( editor.model,
+				'<paragraph>[<mathtex-inline display="false" equation="e=mc^2" type="span">' +
+				'</mathtex-inline>]</paragraph>'
+			);
+
+			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
+			const viewContent = editor.data.toView( selectedContent );
+			const html = editor.data.processor.toData( viewContent );
+
+			expect( html ).to.include( 'math-tex' );
+
+			setData( editor.model, '<paragraph>[]</paragraph>' );
+
+			const viewFragment = editor.data.processor.toView( html );
+			const modelFragment = editor.data.toModel( viewFragment );
+			editor.model.insertContent( modelFragment );
+
+			const result = getData( editor.model );
+			expect( result ).to.include( 'mathtex-inline' );
+			expect( result ).to.include( 'equation="e=mc^2"' );
+			expect( result ).to.include( 'type="span"' );
+		} );
+
+		it( 'should preserve math widget through drag-drop simulation with span output', () => {
+			setData( editor.model,
+				'<paragraph>[<mathtex-inline display="false" equation="e=mc^2" type="span">' +
+				'</mathtex-inline>]</paragraph>' +
+				'<paragraph>Target paragraph</paragraph>'
+			);
+
+			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
+			const viewContent = editor.data.toView( selectedContent );
+			const html = editor.data.processor.toData( viewContent );
+
+			expect( html ).to.not.include( '<script' );
+
+			editor.model.change( () => {
+				editor.model.deleteContent( editor.model.document.selection );
+			} );
+
+			const root = editor.model.document.getRoot()!;
+			const targetParagraph = root.getChild( 1 )!;
+			editor.model.change( writer => {
+				writer.setSelection( writer.createPositionAt( targetParagraph, 0 ) );
+			} );
+
+			const viewFragment = editor.data.processor.toView( html );
+			const modelFragment = editor.data.toModel( viewFragment );
+			editor.model.insertContent( modelFragment );
+
+			const result = getData( editor.model );
+			expect( result ).to.include( 'mathtex-inline' );
+			expect( result ).to.include( 'equation="e=mc^2"' );
+			expect( result ).to.include( 'type="span"' );
+		} );
+	} );
+
+	describe( 'with outputType: "script", forceOutputType: false (defaults)', () => {
+		let editorElement: HTMLDivElement, editor: ClassicEditor;
+
+		beforeEach( async () => {
+			editorElement = document.createElement( 'div' );
+			document.body.appendChild( editorElement );
+
+			editor = await ClassicEditor.create( editorElement, {
+				plugins: [ Mathematics, Typing, Paragraph, Undo ],
+				math: {
+					engine: ( equation: string, element: HTMLElement, display: boolean ) => {
+						if ( display ) {
+							element.innerHTML = '\\[' + equation + '\\]';
+						} else {
+							element.innerHTML = '\\(' + equation + '\\)';
+						}
+					}
+				}
+			} );
+		} );
+
+		afterEach( () => {
+			editorElement.remove();
+			return editor.destroy();
+		} );
+
+		it( 'should downcast inline math as script with math/tex type', () => {
+			setData( editor.model,
+				'<paragraph>[<mathtex-inline display="false" equation="a+b" type="script">' +
+				'</mathtex-inline>]</paragraph>'
+			);
+
+			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
+			const viewContent = editor.data.toView( selectedContent );
+			const html = editor.data.processor.toData( viewContent );
+
+			expect( html ).to.equal( '<script type="math/tex">a+b</script>' );
+		} );
+
+		it( 'should downcast display math as script with mode=display', () => {
+			setData( editor.model,
+				'[<mathtex-display display="true" equation="x^2" type="script"></mathtex-display>]'
+			);
+
+			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
+			const viewContent = editor.data.toView( selectedContent );
+			const html = editor.data.processor.toData( viewContent );
+
+			expect( html ).to.equal( '<script type="math/tex; mode=display">x^2</script>' );
+		} );
+
+		it( 'should preserve original type attribute when forceOutputType is false', () => {
+			editor.data.set(
+				'<p><span class="math-tex">\\(y=mx+b\\)</span></p>'
+			);
+
+			const result = getData( editor.model );
+			expect( result ).to.include( 'mathtex-inline' );
+			expect( result ).to.include( 'equation="y=mx+b"' );
+			expect( result ).to.include( 'type="span"' );
+		} );
+
+		it( 'should preserve script type from script tags when forceOutputType is false', () => {
+			editor.data.set(
+				'<p><script type="math/tex">z^3</script></p>'
+			);
+
+			const result = getData( editor.model );
+			expect( result ).to.include( 'mathtex-inline' );
+			expect( result ).to.include( 'equation="z^3"' );
+			expect( result ).to.include( 'type="script"' );
+		} );
+	} );
+} );
