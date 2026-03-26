@@ -49,6 +49,25 @@ export default class MathEditing extends Plugin {
 				viewElement => viewElement.hasClass( 'math' )
 			)
 		);
+
+		// Force reconversion of math elements after drag-drop / paste / undo.
+		// The UIElement render callback only fires once per DOM element; when
+		// CKEditor moves a widget the callback is not re-invoked, leaving the
+		// KaTeX/MathJax rendered HTML empty. Calling reconvertItem() forces a
+		// full downcast, recreating the UIElement and re-triggering rendering.
+		editor.model.document.on( 'change:data', () => {
+			for ( const change of editor.model.document.differ.getChanges() ) {
+				if ( change.type === 'insert' ) {
+					const item = change.position.nodeAfter;
+					if ( item && (
+						item.is( 'element', 'mathtex-inline' ) ||
+						item.is( 'element', 'mathtex-display' )
+					) ) {
+						editor.editing.reconvertItem( item );
+					}
+				}
+			}
+		} );
 	}
 
 	private _defineSchema() {
@@ -235,7 +254,7 @@ export default class MathEditing extends Plugin {
 
 			const uiElement = writer.createUIElement(
 				'div',
-				null,
+				{ draggable: 'false' },
 				function( domDocument ) {
 					const domElement = this.toDomElement( domDocument );
 
