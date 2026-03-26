@@ -139,10 +139,17 @@ export async function renderEquation(
 			previewClassName,
 			el => {
 				if ( katex ) {
+					// CKEditor's config.get() returns null-prototype objects.
+					// KaTeX calls hasOwnProperty() on macros directly, so we
+					// must ensure it has a proper Object prototype.
+					const options = { ...katexRenderOptions };
+					if ( options.macros ) {
+						options.macros = { ...options.macros };
+					}
 					katex.render( equation, el, {
 						throwOnError: false,
 						displayMode: display,
-						...katexRenderOptions
+						...options
 					} );
 				}
 				if ( preview ) {
