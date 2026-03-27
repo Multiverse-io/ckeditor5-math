@@ -16,14 +16,10 @@
     "@multiverse-io:registry": "https://npm.pkg.github.com"
   },
   "type": "module",
-  "main": "dist/index.ts",
-  "module": "dist/index.js",
+  "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    },
+    ".": "./dist/index.js",
     "./*": "./dist/*",
     "./browser/*": null,
     "./package.json": "./package.json"
@@ -38,24 +34,26 @@
     "ckeditor5-metadata.json"
   ],
   "devDependencies": {
-    "@ckeditor/ckeditor5-dev-build-tools": "55.2.0",
-    "@ckeditor/ckeditor5-inspector": ">=5.0.0",
-    "@ckeditor/ckeditor5-package-tools": "^5.1.0",
-    "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "@types/sinon": "^17.0.3",
-    "@typescript-eslint/eslint-plugin": "~5.43.0",
-    "@typescript-eslint/parser": "^5.18.0",
+    "@ckeditor/ckeditor5-dev-build-tools": "55.3.0",
+    "@ckeditor/ckeditor5-dev-translations": "55.3.0",
+    "@ckeditor/ckeditor5-inspector": "^5.0.0",
+    "@typescript-eslint/parser": "^8.32.1",
+    "@vitest/browser-webdriverio": "^4.1.2",
+    "@vitest/coverage-istanbul": "^4.1.2",
     "ckeditor5": "^47.6.1",
-    "eslint": "^7.32.0",
-    "eslint-config-ckeditor5": "9.1.0",
-    "http-server": "^14.1.0",
+    "eslint": "^9.27.0",
+    "eslint-config-ckeditor5": "^14.0.0",
+    "eslint-plugin-ckeditor5-rules": "^14.0.0",
+    "globals": "^17.4.0",
     "husky": "^4.2.5",
     "lint-staged": "^10.2.6",
-    "stylelint": "^13.13.1",
-    "stylelint-config-ckeditor5": "10.0.0",
-    "ts-node": "^10.9.1",
-    "typescript": "~5.5"
+    "stylelint": "^16.0.0",
+    "stylelint-config-ckeditor5": "^14.0.0",
+    "typescript": "5.5.4",
+    "vite": "^8.0.3",
+    "vite-plugin-svgo": "^2.0.0",
+    "vitest": "^4.1.2",
+    "webdriverio": "^9.27.0"
   },
   "peerDependencies": {
     "ckeditor5": ">=47.0.0"
@@ -75,25 +73,21 @@
     "cross-spawn": "^7.0.5",
     "rollup": "^4.59.0",
     "flatted": "^3.4.2",
-    "@babel/helpers": "^7.26.10",
-    "**/mocha/debug": ">=3.2.7 <4",
-    "**/mocha/diff": ">=3.5.1 <4",
-    "**/mocha/minimatch": ">=3.0.5 <4"
+    "@babel/helpers": "^7.26.10"
   },
   "scripts": {
-    "build:dist": "node ./scripts/build-dist.mjs",
-    "ts:build": "tsc -p ./tsconfig.release.json",
-    "ts:clear": "npx rimraf \"src/**/*.@(js|d.ts)\"",
-    "lint": "eslint \"**/*.{js,ts}\" --quiet",
-    "start": "ckeditor5-package-tools start",
+    "start": "vite",
+    "build": "yarn run build:types && yarn run build:npm && yarn run build:browser",
+    "build:npm": "vite build --mode npm",
+    "build:browser": "vite build --mode browser",
+    "build:types": "tsc -p tsconfig.build.json",
+    "lint": "eslint . --quiet",
     "stylelint": "stylelint --quiet --allow-empty-input 'theme/**/*.css'",
-    "test": "ckeditor5-package-tools test",
-    "prepare": "yarn run build:dist",
-    "prepublishOnly": "yarn run ts:build && ckeditor5-package-tools export-package-as-javascript",
-    "postpublish": "yarn run ts:clear && ckeditor5-package-tools export-package-as-typescript",
-    "translations:collect": "ckeditor5-package-tools translations:collect",
-    "translations:download": "ckeditor5-package-tools translations:download",
-    "translations:upload": "ckeditor5-package-tools translations:upload"
+    "test": "vitest",
+    "test:debug": "vitest --inspect-brk --no-file-parallelism --browser.headless=false",
+    "translations:synchronize": "node ./scripts/synchronize-translations.js",
+    "translations:validate": "node ./scripts/synchronize-translations.js --validate-only",
+    "prepublishOnly": "yarn run build"
   },
   "lint-staged": {
     "**/*.{js,ts}": [
