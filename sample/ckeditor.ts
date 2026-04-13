@@ -2,6 +2,7 @@
 declare global {
 	interface Window {
 		editor: ClassicEditor;
+		createMathEditor: ( outputType: 'span' | 'script' ) => Promise<void>;
 	}
 }
 
@@ -36,65 +37,92 @@ import { Math, AutoformatMath } from '../src/index.js';
 
 import 'ckeditor5/ckeditor5.css';
 
-ClassicEditor
-	.create( document.getElementById( 'editor' )!, {
+// eslint-disable-next-line max-len
+const LICENSE_KEY = 'eyJhbGciOiJFUzI1NiJ9.eyJleHAiOjE3NzMyNzM1OTksImp0aSI6IjE4OWY5M2Q4LThjNGEtNDY1ZS1iM2NjLTExNjA4NmU5MmIxNSIsImRpc3RyaWJ1dGlvbkNoYW5uZWwiOlsic2giLCJkcnVwYWwiXSwid2hpdGVMYWJlbCI6dHJ1ZSwibGljZW5zZVR5cGUiOiJkZXZlbG9wbWVudCIsImZlYXR1cmVzIjpbIkRSVVAiLCJETyIsIkZQIiwiU0MiLCJUT0MiLCJUUEwiLCJQT0UiLCJDQyIsIk1GIiwiU0VFIiwiRUNIIiwiRUlTIiwiTEgiLCJGT08iLCJFMlAiLCJJVyIsIkUyVyJdLCJ2YyI6IjgwZTZiNGY3In0.fxiIg-S7r8GBeN52vnoAsC_OGpFm8LuvMC_MTHGFUJzNants9MKJ1gPiqGX3ZALW10PTJ4KADhrsLPkcsdM_-w';
+
+const SHARED_PLUGINS = [
+	Math,
+	AutoformatMath,
+	Essentials,
+	Autoformat,
+	BlockQuote,
+	Bold,
+	Heading,
+	Image,
+	ImageCaption,
+	ImageStyle,
+	ImageToolbar,
+	ImageUpload,
+	Indent,
+	Italic,
+	Link,
+	List,
+	MediaEmbed,
+	Paragraph,
+	Table,
+	TableToolbar,
+	CodeBlock,
+	Code,
+	Base64UploadAdapter
+];
+
+const SHARED_TOOLBAR = [
+	'undo',
+	'redo',
+	'|',
+	'math',
+	'|',
+	'heading',
+	'|',
+	'bold',
+	'italic',
+	'link',
+	'code',
+	'bulletedList',
+	'numberedList',
+	'|',
+	'outdent',
+	'indent',
+	'|',
+	'uploadImage',
+	'blockQuote',
+	'insertTable',
+	'mediaEmbed',
+	'codeBlock'
+];
+
+function loadTemplate( outputType: 'span' | 'script' ): string {
+	const tpl = document.getElementById( `tpl-${ outputType }` ) as HTMLTemplateElement | null;
+	if ( !tpl ) {
+		throw new Error( `Template #tpl-${ outputType } not found` );
+	}
+	const div = document.createElement( 'div' );
+	div.appendChild( tpl.content.cloneNode( true ) );
+	return div.innerHTML;
+}
+
+async function createMathEditor( outputType: 'span' | 'script' ): Promise<void> {
+	if ( window.editor && typeof window.editor.destroy === 'function' ) {
+		await window.editor.destroy();
+	}
+
+	const editorEl = document.getElementById( 'editor' )!;
+	editorEl.innerHTML = loadTemplate( outputType );
+
+	const editor = await ClassicEditor.create( editorEl, {
+		licenseKey: LICENSE_KEY,
 		math: {
 			engine: 'katex',
+			outputType,
+			forceOutputType: outputType === 'span',
 			katexRenderOptions: {
 				macros: {
 					'\\test': '\\mathrel{\\char`≠}'
 				}
 			}
 		},
-		plugins: [
-			Math,
-			AutoformatMath,
-			Essentials,
-			Autoformat,
-			BlockQuote,
-			Bold,
-			Heading,
-			Image,
-			ImageCaption,
-			ImageStyle,
-			ImageToolbar,
-			ImageUpload,
-			Indent,
-			Italic,
-			Link,
-			List,
-			MediaEmbed,
-			Paragraph,
-			Table,
-			TableToolbar,
-			CodeBlock,
-			Code,
-			Base64UploadAdapter
-		],
-		toolbar: [
-			'undo',
-			'redo',
-			'|',
-			'math',
-			'|',
-			'heading',
-			'|',
-			'bold',
-			'italic',
-			'link',
-			'code',
-			'bulletedList',
-			'numberedList',
-			'|',
-			'outdent',
-			'indent',
-			'|',
-			'uploadImage',
-			'blockQuote',
-			'insertTable',
-			'mediaEmbed',
-			'codeBlock'
-		],
+		plugins: SHARED_PLUGINS,
+		toolbar: SHARED_TOOLBAR,
 		image: {
 			toolbar: [
 				'imageStyle:inline',
@@ -111,12 +139,29 @@ ClassicEditor
 				'mergeTableCells'
 			]
 		}
-	} )
-	.then( editor => {
-		window.editor = editor;
-		CKEditorInspector.attach( editor );
-		window.console.log( 'CKEditor 5 is ready.', editor );
-	} )
-	.catch( err => {
-		window.console.error( err.stack );
 	} );
+
+	window.editor = editor;
+	CKEditorInspector.attach( editor );
+	window.console.log( `CKEditor 5 is ready (outputType: ${ outputType }).`, editor );
+}
+
+window.createMathEditor = createMathEditor;
+
+// Read initial selection from radio buttons
+const checkedRadio = document.querySelector<HTMLInputElement>(
+	'input[name="outputType"]:checked'
+);
+const initialType = ( checkedRadio?.value === 'script' ? 'script' : 'span' ) as 'span' | 'script';
+
+// Wire up radio change handler
+document.querySelectorAll<HTMLInputElement>( 'input[name="outputType"]' ).forEach( radio => {
+	radio.addEventListener( 'change', () => {
+		createMathEditor( radio.value as 'span' | 'script' );
+	} );
+} );
+
+// Create initial editor
+createMathEditor( initialType ).catch( err => {
+	window.console.error( err.stack );
+} );

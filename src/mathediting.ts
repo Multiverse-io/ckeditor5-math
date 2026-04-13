@@ -4,8 +4,8 @@ import {
 	toWidget,
 	Widget,
 	viewToModelPositionOutsideModelElement,
-	type DowncastWriter,
-	type Element,
+	type ViewDowncastWriter,
+	type ModelElement,
 	CKEditorError,
 	uid
 } from 'ckeditor5';
@@ -49,6 +49,25 @@ export default class MathEditing extends Plugin {
 				viewElement => viewElement.hasClass( 'math' )
 			)
 		);
+
+		// Force reconversion of math elements after drag-drop / paste / undo.
+		// The UIElement render callback only fires once per DOM element; when
+		// CKEditor moves a widget the callback is not re-invoked, leaving the
+		// KaTeX/MathJax rendered HTML empty. Calling reconvertItem() forces a
+		// full downcast, recreating the UIElement and re-triggering rendering.
+		editor.model.document.on( 'change:data', () => {
+			for ( const change of editor.model.document.differ.getChanges() ) {
+				if ( change.type === 'insert' ) {
+					const item = change.position.nodeAfter;
+					if ( item && (
+						item.is( 'element', 'mathtex-inline' ) ||
+						item.is( 'element', 'mathtex-display' )
+					) ) {
+						editor.editing.reconvertItem( item );
+					}
+				}
+			}
+		} );
 	}
 
 	private _defineSchema() {
@@ -212,8 +231,8 @@ export default class MathEditing extends Plugin {
 
 		// Create view for editor
 		function createMathtexEditingView(
-			modelItem: Element,
-			writer: DowncastWriter
+			modelItem: ModelElement,
+			writer: ViewDowncastWriter
 		) {
 			const equation = String( modelItem.getAttribute( 'equation' ) );
 			const display = !!modelItem.getAttribute( 'display' );
@@ -235,7 +254,7 @@ export default class MathEditing extends Plugin {
 
 			const uiElement = writer.createUIElement(
 				'div',
-				null,
+				{ draggable: 'false' },
 				function( domDocument ) {
 					const domElement = this.toDomElement( domDocument );
 
@@ -262,8 +281,8 @@ export default class MathEditing extends Plugin {
 
 		// Create view for data
 		function createMathtexView(
-			modelItem: Element,
-			{ writer }: { writer: DowncastWriter }
+			modelItem: ModelElement,
+			{ writer }: { writer: ViewDowncastWriter }
 		) {
 			const equation = modelItem.getAttribute( 'equation' );
 			if ( typeof equation != 'string' ) {

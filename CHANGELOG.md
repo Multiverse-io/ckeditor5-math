@@ -4,6 +4,14 @@
 
 -   Add latest changes here
 
+## [v47.6.1-next.0](https://github.com/Multiverse-io/ckeditor5-math/compare/v43.2.0-next.2...v47.6.1-next.0) (2026-03-27)
+
+-   Update dependencies and compatibility for CKEditor 47.6.1.
+-   Fix drag-and-drop reconversion and widget persistence after moving math widgets.
+-   Restore KaTeX sample rendering and balloon form styling for CKEditor 47.
+-   Raise the minimum Node.js version to 24.11+ for the CKEditor 47 toolchain.
+-   Add an `outputType` sample toggle with span/script tests.
+
 ## [v43.2.0-next.2](https://github.com/Multiverse-io/ckeditor5-math/compare/v43.2.0-next.1...v43.2.0-next.2) (2024-10-22)
 
 -   Update toolbar icon svg

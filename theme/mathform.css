@@ -1,9 +1,19 @@
-.ck.ck-math-form {
+form.ck.ck-math-form {
 	display: flex;
 	align-items: flex-start;
 	flex-direction: row;
 	flex-wrap: nowrap;
 	padding: var(--ck-spacing-standard);
+
+	& .ck-math-view {
+		display: flex;
+		flex-direction: column;
+		gap: var(--ck-spacing-standard);
+	}
+
+	& .ck-math-preview {
+		padding: var(--ck-spacing-standard);
+	}
 
 	@media screen and (max-width: 600px) {
 		flex-wrap: wrap;

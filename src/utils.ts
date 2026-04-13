@@ -1,7 +1,7 @@
 import {
 	type Editor,
-	type Element as CKElement,
-	type DocumentSelection,
+	type ModelElement as CKElement,
+	type ModelDocumentSelection,
 	BalloonPanelView,
 	CKEditorError,
 	type PositioningFunction,
@@ -10,7 +10,7 @@ import {
 import type { KatexOptions, MathJax2, MathJax3 } from './typings-external.js';
 
 export function getSelectedMathModelWidget(
-	selection: DocumentSelection
+	selection: ModelDocumentSelection
 ): null | CKElement {
 	const selectedElement = selection.getSelectedElement();
 
@@ -139,10 +139,17 @@ export async function renderEquation(
 			previewClassName,
 			el => {
 				if ( katex ) {
+					// CKEditor's config.get() returns null-prototype objects.
+					// KaTeX calls hasOwnProperty() on macros directly, so we
+					// must ensure it has a proper Object prototype.
+					const options = { ...katexRenderOptions };
+					if ( options.macros ) {
+						options.macros = { ...options.macros };
+					}
 					katex.render( equation, el, {
 						throwOnError: false,
 						displayMode: display,
-						...katexRenderOptions
+						...options
 					} );
 				}
 				if ( preview ) {
