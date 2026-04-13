@@ -1,38 +1,38 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import Mathematics from '../src/math.js';
 import AutoMath from '../src/automath.js';
 import {
 	ClassicEditor, Clipboard, Paragraph, Undo, Typing, global,
 	_getModelData as getData, _setModelData as setData
 } from 'ckeditor5';
-import { expect } from 'chai';
-import type { SinonFakeTimers } from 'sinon';
 
 describe( 'AutoMath - integration', () => {
-	let editorElement: HTMLDivElement, editor: ClassicEditor;
+	let editorElement: HTMLDivElement;
+	let editor: ClassicEditor;
 
 	beforeEach( async () => {
+		vi.useFakeTimers();
+
 		editorElement = global.document.createElement( 'div' );
 		global.document.body.appendChild( editorElement );
 
-		return ClassicEditor
-			.create( editorElement, {
-				plugins: [ Mathematics, AutoMath, Typing, Paragraph ],
-				math: {
-					engine: ( equation, element, display ) => {
-						if ( display ) {
-							element.innerHTML = '\\[' + equation + '\\]';
-						} else {
-							element.innerHTML = '\\(' + equation + '\\)';
-						}
+		editor = await ClassicEditor.create( editorElement, {
+			licenseKey: 'GPL',
+			plugins: [ Mathematics, AutoMath, Typing, Paragraph ],
+			math: {
+				engine: ( equation, element, display ) => {
+					if ( display ) {
+						element.innerHTML = `\\[${ equation }\\]`;
+					} else {
+						element.innerHTML = `\\(${ equation }\\)`;
 					}
 				}
-			} )
-			.then( newEditor => {
-				editor = newEditor;
-			} );
+			}
+		} );
 	} );
 
 	afterEach( () => {
+		vi.useRealTimers();
 		editorElement.remove();
 
 		return editor.destroy();
@@ -50,56 +50,42 @@ describe( 'AutoMath - integration', () => {
 		expect( AutoMath.pluginName ).to.equal( 'AutoMath' );
 	} );
 
-	describe( 'use fake timers', () => {
-		let clock: SinonFakeTimers;
-
-		beforeEach( () => {
-			clock = sinon.useFakeTimers();
-		} );
-
-		afterEach( () => {
-			clock.restore();
-		} );
-
-		it( 'replaces pasted text with mathtex element after 100ms', () => {
+	describe( 'delayed replacement', () => {
+		it( 'replaces pasted display-math text after 100ms', async () => {
 			setData( editor.model, '<paragraph>[]</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\]' );
+			pastePlainText( '\\[x^2\\]' );
 
 			expect( getData( editor.model ) ).to.equal(
 				'<paragraph>\\[x^2\\][]</paragraph>'
 			);
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>[<mathtex display="true" equation="x^2" type="script"></mathtex>]</paragraph>'
+				'[<mathtex-display display="true" equation="x^2" type="script"></mathtex-display>]'
 			);
 		} );
 
-		it( 'replaces pasted text with inline mathtex element after 100ms', () => {
+		it( 'replaces pasted inline-math text after 100ms', async () => {
 			setData( editor.model, '<paragraph>[]</paragraph>' );
-			pasteHtml( editor, '\\(x^2\\)' );
+			pastePlainText( '\\(x^2\\)' );
 
 			expect( getData( editor.model ) ).to.equal(
 				'<paragraph>\\(x^2\\)[]</paragraph>'
 			);
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>[<mathtex display="false" equation="x^2" type="script"></mathtex>]</paragraph>'
+				'<paragraph>[<mathtex-inline display="false" equation="x^2" type="script"></mathtex-inline>]</paragraph>'
 			);
 		} );
 
-		it( 'can undo auto-mathing', () => {
+		it( 'can undo auto-mathing', async () => {
 			setData( editor.model, '<paragraph>[]</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\]' );
+			pastePlainText( '\\[x^2\\]' );
 
-			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>\\[x^2\\][]</paragraph>'
-			);
-
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			editor.commands.execute( 'undo' );
 
@@ -108,59 +94,57 @@ describe( 'AutoMath - integration', () => {
 			);
 		} );
 
-		it( 'works for not collapsed selection inside single element', () => {
+		it( 'works for non-collapsed selection inside a single element', async () => {
 			setData( editor.model, '<paragraph>[Foo]</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\]' );
+			pastePlainText( '\\[x^2\\]' );
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>[<mathtex display="true" equation="x^2" type="script"></mathtex>]</paragraph>'
+				'[<mathtex-display display="true" equation="x^2" type="script"></mathtex-display>]'
 			);
 		} );
 
-		it( 'works for not collapsed selection over a few elements', () => {
+		it( 'works for non-collapsed selection over multiple elements', async () => {
 			setData( editor.model, '<paragraph>Fo[o</paragraph><paragraph>Ba]r</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\]' );
+			pastePlainText( '\\[x^2\\]' );
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>Fo[<mathtex display="true" equation="x^2" type="script"></mathtex>]r</paragraph>'
+				'<paragraph>Fo</paragraph>' +
+				'[<mathtex-display display="true" equation="x^2" type="script"></mathtex-display>]' +
+				'<paragraph>r</paragraph>'
 			);
 		} );
 
-		it( 'inserts mathtex in-place (collapsed selection)', () => {
+		it( 'inserts math in-place for a collapsed selection', async () => {
 			setData( editor.model, '<paragraph>Foo []Bar</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\]' );
+			pastePlainText( '\\(x^2\\)' );
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>Foo ' +
-				'[<mathtex display="true" equation="x^2" type="script"></mathtex>]' +
-				'Bar</paragraph>'
+				'<paragraph>Foo [<mathtex-inline display="false" equation="x^2" type="script"></mathtex-inline>]Bar</paragraph>'
 			);
 		} );
 
-		it( 'inserts math in-place (non-collapsed selection)', () => {
+		it( 'inserts math in-place for a non-collapsed selection', async () => {
 			setData( editor.model, '<paragraph>Foo [Bar] Baz</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\]' );
+			pastePlainText( '\\(x^2\\)' );
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
-				'<paragraph>Foo ' +
-				'[<mathtex display="true" equation="x^2" type="script"></mathtex>]' +
-				' Baz</paragraph>'
+				'<paragraph>Foo [<mathtex-inline display="false" equation="x^2" type="script"></mathtex-inline>] Baz</paragraph>'
 			);
 		} );
 
-		it( 'does nothing if pasted two equation as text', () => {
+		it( 'does nothing if pasted text contains multiple equations', async () => {
 			setData( editor.model, '<paragraph>[]</paragraph>' );
-			pasteHtml( editor, '\\[x^2\\] \\[\\sqrt{x}2\\]' );
+			pastePlainText( '\\[x^2\\] \\[\\sqrt{x}2\\]' );
 
-			clock.tick( 100 );
+			await vi.advanceTimersByTimeAsync( 100 );
 
 			expect( getData( editor.model ) ).to.equal(
 				'<paragraph>\\[x^2\\] \\[\\sqrt{x}2\\][]</paragraph>'
@@ -168,19 +152,24 @@ describe( 'AutoMath - integration', () => {
 		} );
 	} );
 
-	function pasteHtml( editor: ClassicEditor, html: string ) {
-		editor.editing.view.document.fire( 'paste', {
-			dataTransfer: createDataTransfer( { 'text/html': html } ),
-			preventDefault() {
-				return undefined;
-			}
+	function pastePlainText( text: string ) {
+		editor.editing.view.document.fire( 'clipboardInput', {
+			method: 'paste',
+			dataTransfer: createDataTransfer( {
+				'text/plain': text
+			} )
 		} );
 	}
 
-	function createDataTransfer( data: Record<string, string> ) {
+	function createDataTransfer( initialData: Record<string, string> ) {
+		const data = { ...initialData };
+
 		return {
 			getData( type: string ) {
-				return data[ type ];
+				return data[ type ] ?? '';
+			},
+			setData( type: string, value: string ) {
+				data[ type ] = value;
 			}
 		};
 	}

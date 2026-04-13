@@ -72,21 +72,20 @@ export default class MathUI extends Plugin {
 			throw new CKEditorError( 'math-command' );
 		}
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const mathConfig = editor.config.get( 'math' )!;
 
 		const formView = new MainFormView(
 			editor.locale,
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 			mathConfig.engine!,
 			mathConfig.lazyLoad,
 			mathConfig.enablePreview,
 			this._previewUid,
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 			mathConfig.previewClassName!,
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 			mathConfig.popupClassName!,
-			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 			mathConfig.katexRenderOptions!
 		);
 

@@ -16,26 +16,26 @@ export interface Katex {
 }
 
 declare global {
-	// eslint-disable-next-line no-var
+
 	var CKEDITOR_MATH_LAZY_LOAD: undefined | Promise<void>;
-	// eslint-disable-next-line no-var
+
 	var MathJax: undefined | MathJax2 | MathJax3;
-	// eslint-disable-next-line no-var
+
 	var katex: undefined | Katex;
 }
 
 export interface KatexOptions {
 
-    /**
+	/**
      * If `true`, math will be rendered in display mode
      * (math in display style and center math on page)
      *
      * If `false`, math will be rendered in inline mode
      * @default false
      */
-    displayMode?: boolean | undefined;
+	displayMode?: boolean | undefined;
 
-    /**
+	/**
      * Determines the markup language of the output. The valid choices are:
      * - `html`: Outputs KaTeX in HTML only.
      * - `mathml`: Outputs KaTeX in MathML only.
@@ -44,25 +44,25 @@ export interface KatexOptions {
      *
      * @default 'htmlAndMathml'
      */
-    output?: 'html' | 'mathml' | 'htmlAndMathml' | undefined;
+	output?: 'html' | 'mathml' | 'htmlAndMathml' | undefined;
 
-    /**
+	/**
      * If `true`, display math has \tags rendered on the left
      * instead of the right, like \usepackage[leqno]{amsmath} in LaTeX.
      *
      * @default false
      */
-    leqno?: boolean | undefined;
+	leqno?: boolean | undefined;
 
-    /**
+	/**
      * If `true`, display math renders flush left with a 2em left margin,
      * like \documentclass[fleqn] in LaTeX with the amsmath package.
      *
      * @default false
      */
-    fleqn?: boolean | undefined;
+	fleqn?: boolean | undefined;
 
-    /**
+	/**
      * If `true`, KaTeX will throw a `ParseError` when
      * it encounters an unsupported command or invalid LaTex
      *
@@ -71,29 +71,29 @@ export interface KatexOptions {
      * hover text giving the error, in color given by errorColor
      * @default true
      */
-    throwOnError?: boolean | undefined;
+	throwOnError?: boolean | undefined;
 
-    /**
+	/**
      * A Color string given in format `#XXX` or `#XXXXXX`
      */
-    errorColor?: string | undefined;
+	errorColor?: string | undefined;
 
-    /**
+	/**
      * A collection of custom macros.
      *
      * See `src/macros.js` for its usage
      */
-    macros?: unknown;
+	macros?: unknown;
 
-    /**
+	/**
      * Specifies a minimum thickness, in ems, for fraction lines,
      * \sqrt top lines, {array} vertical lines, \hline, \hdashline,
      * \underline, \overline, and the borders of \fbox, \boxed, and
      * \fcolorbox.
      */
-    minRuleThickness?: number | undefined;
+	minRuleThickness?: number | undefined;
 
-    /**
+	/**
      * If `true`, `\color` will work like LaTeX's `\textcolor`
      * and takes 2 arguments
      *
@@ -104,9 +104,9 @@ export interface KatexOptions {
      *
      * @default false
      */
-    colorIsTextColor?: boolean | undefined;
+	colorIsTextColor?: boolean | undefined;
 
-    /**
+	/**
      * All user-specified sizes will be caped to `maxSize` ems
      *
      * If set to Infinity, users can make elements and space
@@ -114,9 +114,9 @@ export interface KatexOptions {
      *
      * @default Infinity
      */
-    maxSize?: number | undefined;
+	maxSize?: number | undefined;
 
-    /**
+	/**
      * Limit the number of macro expansions to specified number
      *
      * If set to `Infinity`, marco expander will try to fully expand
@@ -124,9 +124,9 @@ export interface KatexOptions {
      *
      * @default 1000
      */
-    maxExpand?: number | undefined;
+	maxExpand?: number | undefined;
 
-    /**
+	/**
      * If `false` or `"ignore"`, allow features that make
      * writing in LaTex convenient but not supported by LaTex
      *
@@ -136,21 +136,21 @@ export interface KatexOptions {
      *
      * @default "warn"
      */
-    strict?: boolean | string | Function | undefined;
+	strict?: boolean | string | Function | undefined;
 
-    /**
+	/**
      * If `false` (do not trust input), prevent any commands that could enable adverse behavior, rendering them instead in errorColor.
      *
      * If `true` (trust input), allow all such commands.
      *
      * @default false
      */
-    trust?: boolean | ( ( context: object ) => boolean ) | undefined;
+	trust?: boolean | ( ( context: object ) => boolean ) | undefined;
 
-    /**
+	/**
      * Place KaTeX code in the global group.
      *
      * @default false
      */
-    globalGroup?: boolean | undefined;
+	globalGroup?: boolean | undefined;
 }

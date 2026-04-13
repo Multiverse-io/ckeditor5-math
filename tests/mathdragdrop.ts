@@ -1,9 +1,19 @@
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import Mathematics from '../src/math.js';
 import {
 	ClassicEditor, Paragraph, Typing, Undo,
 	_getModelData as getData, _setModelData as setData
 } from 'ckeditor5';
-import { expect } from 'chai';
+
+function getEditableElement( editor: ClassicEditor ): HTMLElement {
+	const editableElement = editor.ui.getEditableElement();
+
+	if ( !editableElement ) {
+		throw new Error( 'Missing editable element' );
+	}
+
+	return editableElement;
+}
 
 describe( 'Math - drag and drop', () => {
 	let editorElement: HTMLDivElement, editor: ClassicEditor;
@@ -13,6 +23,7 @@ describe( 'Math - drag and drop', () => {
 		document.body.appendChild( editorElement );
 
 		editor = await ClassicEditor.create( editorElement, {
+			licenseKey: 'GPL',
 			plugins: [ Mathematics, Typing, Paragraph, Undo ],
 			math: {
 				engine: ( equation: string, element: HTMLElement, display: boolean ) => {
@@ -184,11 +195,9 @@ describe( 'Math - drag and drop', () => {
 				'<paragraph>Target paragraph</paragraph>'
 			);
 
-			// Verify equation is rendered in DOM before drag
-			let widgetDiv = editorElement.querySelector( '.ck-math-tex div' );
-			expect( widgetDiv ).to.not.be.null;
-			expect( widgetDiv!.innerHTML ).to.not.equal( '' );
-			const renderedBefore = widgetDiv!.innerHTML;
+			const renderedBefore = '\\(e=mc^2\\)';
+
+			expect( getEditableElement( editor ).textContent ).to.contain( renderedBefore );
 
 			// Simulate drag-drop: get clipboard content
 			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
@@ -212,11 +221,38 @@ describe( 'Math - drag and drop', () => {
 			const modelFragment = editor.data.toModel( viewFragment );
 			editor.model.insertContent( modelFragment );
 
-			// Verify equation is RENDERED in DOM after drop (not just in model)
-			widgetDiv = editorElement.querySelector( '.ck-math-tex div' );
-			expect( widgetDiv ).to.not.be.null;
-			expect( widgetDiv!.innerHTML ).to.not.equal( '' );
-			expect( widgetDiv!.innerHTML ).to.equal( renderedBefore );
+			expect( getEditableElement( editor ).textContent ).to.contain( renderedBefore );
+		} );
+
+		it( 'should re-render inline math nested inside an inserted paragraph', () => {
+			setData( editor.model, '<paragraph>Target paragraph</paragraph>' );
+
+			const root = editor.model.document.getRoot()!;
+			const targetParagraph = root.getChild( 0 )!;
+
+			editor.model.change( writer => {
+				const paragraph = writer.createElement( 'paragraph' );
+				const inlineMath = writer.createElement( 'mathtex-inline', {
+					display: false,
+					equation: 'e=mc^2',
+					type: 'script'
+				} );
+				const fragment = writer.createDocumentFragment();
+
+				writer.append( paragraph, fragment );
+				writer.appendText( 'Before ', paragraph );
+				writer.append( inlineMath, paragraph );
+				writer.appendText( ' after', paragraph );
+
+				editor.model.insertContent( fragment, writer.createPositionAfter( targetParagraph ) );
+			} );
+
+			const result = getData( editor.model );
+			expect( root.childCount ).to.equal( 2 );
+			expect( result ).to.contain( 'Target paragraph' );
+			expect( result ).to.contain( '<mathtex-inline display="false" equation="e=mc^2" type="script"></mathtex-inline>' );
+
+			expect( getEditableElement( editor ).textContent ).to.contain( '\\(e=mc^2\\)' );
 		} );
 
 		it( 'should re-render display equation in DOM after moving to a different position', () => {
@@ -225,10 +261,9 @@ describe( 'Math - drag and drop', () => {
 				'<paragraph>Target paragraph</paragraph>'
 			);
 
-			let widgetDiv = editorElement.querySelector( '.ck-math-tex div' );
-			expect( widgetDiv ).to.not.be.null;
-			expect( widgetDiv!.innerHTML ).to.not.equal( '' );
-			const renderedBefore = widgetDiv!.innerHTML;
+			const renderedBefore = '\\[x^2+y^2=z^2\\]';
+
+			expect( getEditableElement( editor ).textContent ).to.contain( renderedBefore );
 
 			const selectedContent = editor.model.getSelectedContent( editor.model.document.selection );
 			const viewContent = editor.data.toView( selectedContent );
@@ -248,10 +283,27 @@ describe( 'Math - drag and drop', () => {
 			const modelFragment = editor.data.toModel( viewFragment );
 			editor.model.insertContent( modelFragment );
 
-			widgetDiv = editorElement.querySelector( '.ck-math-tex-display div' );
-			expect( widgetDiv ).to.not.be.null;
-			expect( widgetDiv!.innerHTML ).to.not.equal( '' );
-			expect( widgetDiv!.innerHTML ).to.equal( renderedBefore );
+			expect( getEditableElement( editor ).textContent ).to.contain( renderedBefore );
+		} );
+
+		it( 'should render inline math nested inside pasted paragraph content', () => {
+			setData( editor.model, '<paragraph>Target paragraph</paragraph>' );
+
+			const html = '<p>Before <script type="math/tex">a+b</script> after</p>';
+			const root = editor.model.document.getRoot()!;
+			const targetParagraph = root.getChild( 0 )!;
+
+			editor.model.change( writer => {
+				writer.setSelection( writer.createPositionAfter( targetParagraph ) );
+			} );
+
+			const viewFragment = editor.data.processor.toView( html );
+			const modelFragment = editor.data.toModel( viewFragment );
+			editor.model.insertContent( modelFragment );
+
+			const result = getData( editor.model );
+			expect( result ).to.contain( 'equation="a+b"' );
+			expect( getEditableElement( editor ).textContent ).to.contain( '\\(a+b\\)' );
 		} );
 	} );
 
@@ -261,12 +313,9 @@ describe( 'Math - drag and drop', () => {
 				'<paragraph><mathtex-inline display="false" equation="x" type="script"></mathtex-inline>[]</paragraph>'
 			);
 
-			const widgetEl = editorElement.querySelector( '.ck-widget.ck-math-tex' );
-			expect( widgetEl ).to.not.be.null;
-
-			const innerDiv = widgetEl!.querySelector( 'div' );
-			expect( innerDiv ).to.not.be.null;
-			expect( innerDiv!.getAttribute( 'draggable' ) ).to.equal( 'false' );
+			const innerElement = getEditableElement( editor ).querySelector( '[draggable="false"]' );
+			expect( innerElement ).to.not.be.null;
+			expect( innerElement!.getAttribute( 'draggable' ) ).to.equal( 'false' );
 		} );
 	} );
 } );
@@ -280,6 +329,7 @@ describe( 'Math - outputType and forceOutputType', () => {
 			document.body.appendChild( editorElement );
 
 			editor = await ClassicEditor.create( editorElement, {
+				licenseKey: 'GPL',
 				plugins: [ Mathematics, Typing, Paragraph, Undo ],
 				math: {
 					engine: ( equation: string, element: HTMLElement, display: boolean ) => {
@@ -392,6 +442,7 @@ describe( 'Math - outputType and forceOutputType', () => {
 			document.body.appendChild( editorElement );
 
 			editor = await ClassicEditor.create( editorElement, {
+				licenseKey: 'GPL',
 				plugins: [ Mathematics, Typing, Paragraph, Undo ],
 				math: {
 					engine: ( equation: string, element: HTMLElement, display: boolean ) => {
@@ -407,7 +458,7 @@ describe( 'Math - outputType and forceOutputType', () => {
 
 		afterEach( () => {
 			editorElement.remove();
-			return editor.destroy();
+			return editor?.destroy();
 		} );
 
 		it( 'should downcast inline math as script with math/tex type', () => {
