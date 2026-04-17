@@ -14,5 +14,5 @@ metadata:
       url: https://github.com/Multiverse-io/ckeditor5-math
 spec:
   type: library
-  owner: lobsters
+  owner: async-learning
   lifecycle: production
