@@ -1,4 +1,4 @@
-import { Plugin, type Editor, ModelLivePosition, ModelLiveRange, Undo, global, Clipboard } from 'ckeditor5';
+import { Plugin, type Editor, ModelLivePosition, ModelLiveRange, Undo, global, Clipboard, ClipboardPipeline } from 'ckeditor5';
 import { extractDelimiters, hasDelimiters, delimitersCounts } from './utils.js';
 
 export default class AutoMath extends Plugin {
@@ -25,7 +25,7 @@ export default class AutoMath extends Plugin {
 		const editor = this.editor;
 		const modelDocument = editor.model.document;
 
-		this.listenTo( editor.plugins.get( Clipboard ), 'inputTransformation', () => {
+		this.listenTo( editor.plugins.get( ClipboardPipeline ), 'inputTransformation', () => {
 			const firstRange = modelDocument.selection.getFirstRange();
 			if ( !firstRange ) {
 				return;
@@ -68,7 +68,6 @@ export default class AutoMath extends Plugin {
 	) {
 		const editor = this.editor;
 
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		const mathConfig = this.editor.config.get( 'math' )!;
 
 		const equationRange = new ModelLiveRange( leftPosition, rightPosition );

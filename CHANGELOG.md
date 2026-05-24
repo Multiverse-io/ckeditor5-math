@@ -7,6 +7,10 @@
 ## [v47.6.1-next.0](https://github.com/Multiverse-io/ckeditor5-math/compare/v43.2.0-next.2...v47.6.1-next.0) (2026-03-27)
 
 -   Update dependencies and compatibility for CKEditor 47.6.1.
+-   Replace `@ckeditor/ckeditor5-package-tools` build toolchain with Vite
+    and Vitest.
+-   Fix blank equations when moving or inserting containers with nested
+    math widgets.
 -   Fix drag-and-drop reconversion and widget persistence after moving math widgets.
 -   Restore KaTeX sample rendering and balloon form styling for CKEditor 47.
 -   Raise the minimum Node.js version to 24.11+ for the CKEditor 47 toolchain.

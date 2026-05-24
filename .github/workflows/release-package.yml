@@ -18,9 +18,11 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: "24.x"
+                  cache: "yarn"
             - name: project - install
               run: yarn --frozen-lockfile
-            - run: yarn eslint
+            - run: yarn lint
+            - run: yarn test --run
 
     publish:
         needs: test
@@ -36,10 +38,11 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: "24.x"
+                  cache: "yarn"
                   registry-url: https://npm.pkg.github.com/
             - name: project - install
               run: yarn --frozen-lockfile
-            - run: yarn prepare
+            - run: yarn build
             - run: yarn publish
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { ClassicEditor, Essentials, Paragraph, Heading } from 'ckeditor5';
 import Math from '../src/math.js';
 
@@ -15,6 +15,7 @@ describe( 'Math', () => {
 			document.body.appendChild( domElement );
 
 			editor = await ClassicEditor.create( domElement, {
+				licenseKey: 'GPL',
 				plugins: [
 					Paragraph,
 					Heading,

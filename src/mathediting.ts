@@ -56,16 +56,39 @@ export default class MathEditing extends Plugin {
 		// KaTeX/MathJax rendered HTML empty. Calling reconvertItem() forces a
 		// full downcast, recreating the UIElement and re-triggering rendering.
 		editor.model.document.on( 'change:data', () => {
+			const itemsToReconvert = new Set<ModelElement>();
+
 			for ( const change of editor.model.document.differ.getChanges() ) {
-				if ( change.type === 'insert' ) {
-					const item = change.position.nodeAfter;
-					if ( item && (
-						item.is( 'element', 'mathtex-inline' ) ||
-						item.is( 'element', 'mathtex-display' )
-					) ) {
-						editor.editing.reconvertItem( item );
+				if ( change.type !== 'insert' || change.position.root.rootName === '$graveyard' ) {
+					continue;
+				}
+
+				const insertedItem = change.position.nodeAfter;
+
+				if ( !insertedItem ) {
+					continue;
+				}
+
+				if (
+					insertedItem.is( 'element', 'mathtex-inline' ) ||
+					insertedItem.is( 'element', 'mathtex-display' )
+				) {
+					itemsToReconvert.add( insertedItem );
+				}
+
+				if ( !insertedItem.is( 'element' ) ) {
+					continue;
+				}
+
+				for ( const item of editor.model.createRangeOn( insertedItem ).getItems() ) {
+					if ( item.is( 'element', 'mathtex-inline' ) || item.is( 'element', 'mathtex-display' ) ) {
+						itemsToReconvert.add( item );
 					}
 				}
+			}
+
+			for ( const item of itemsToReconvert ) {
+				editor.editing.reconvertItem( item );
 			}
 		} );
 	}
@@ -89,7 +112,7 @@ export default class MathEditing extends Plugin {
 
 	private _defineConverters() {
 		const conversion = this.editor.conversion;
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 		const mathConfig = this.editor.config.get( 'math' )!;
 
 		// View -> Model
@@ -145,7 +168,7 @@ export default class MathEditing extends Plugin {
 			.elementToElement( {
 				view: {
 					name: 'span',
-					// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
 					classes: [ mathConfig.className! ]
 				},
 				model: ( viewElement, { writer } ) => {

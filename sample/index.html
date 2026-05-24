@@ -79,9 +79,8 @@
 
     <pre><code class="language-plaintext">.
 ├─ sample
-│  ├─ dll.html          # The editor initialized using the DLL builds. Check README for details.
 │  ├─ index.html        # The currently displayed file.
-│  └─ ckeditor.js       # The editor initialization script.
+│  └─ index.ts          # The editor initialization script for Vite.
 ├─ src
 │  ├─ autoformatmath.js # The AutoformatMath plugin.
 │  ├─ math.js           # The Math plugin.
@@ -136,9 +135,8 @@
 
     <pre><code class="language-plaintext">.
 ├─ sample
-│  ├─ dll.html          # The editor initialized using the DLL builds. Check README for details.
 │  ├─ index.html        # The currently displayed file.
-│  └─ ckeditor.js       # The editor initialization script.
+│  └─ index.ts          # The editor initialization script for Vite.
 ├─ src
 │  ├─ autoformatmath.js # The AutoformatMath plugin.
 │  ├─ math.js           # The Math plugin.
@@ -159,7 +157,7 @@
     <p><a href="https://github.com/multiverse-io/ckeditor5-math/issues">CKEditor 5 Math</a></p>
 </template>
 
-<script src="./ckeditor.dist.js"></script>
+<script type="module" src="./index.ts"></script>
 <script
     src="https://cdn.jsdelivr.net/npm/katex@0.16.43/dist/contrib/auto-render.min.js"
     crossorigin="anonymous"

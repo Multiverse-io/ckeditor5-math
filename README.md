@@ -27,16 +27,16 @@ ckeditor5-math is a TeX-based mathematical plugin for CKEditor 5. You can use it
   * [`test`](#test)
   * [`lint`](#lint)
   * [`stylelint`](#stylelint)
-  * [`build:dist`](#builddist)
-  * [`translations:collect`](#translationscollect)
-  * [`translations:download`](#translationsdownload)
-  * [`translations:upload`](#translationsupload)
-  * [`ts:build` and `ts:clear`](#tsbuild-and-tsclear)
+  * [`build`](#build)
+  * [`build:npm`](#buildnpm)
+  * [`build:browser`](#buildbrowser)
+  * [`build:types`](#buildtypes)
+  * [`translations:synchronize`](#translationssynchronize)
+  * [`translations:validate`](#translationsvalidate)
 
 ## Features
 
 -   Written in TypeScript (as of v41.2.1)
--   DLL build support (as of v36.0.3)
 -   TeX syntax
 -   Inline and display equations
 -   Preview view
@@ -114,24 +114,6 @@ InlineEditor.defaultConfig = {
 ### Styles for Lark theme
 
 **Copy theme/ckeditor5-math folder** from [https://github.com/isaul32/ckeditor5/tree/master/packages/ckeditor5-theme-lark](https://github.com/isaul32/ckeditor5/tree/master/packages/ckeditor5-theme-lark) to your lark theme repository
-
-### Using DLL builds
-
-Use the [official DLL build](https://ckeditor.com/docs/ckeditor5/latest/installation/advanced/alternative-setups/dll-builds.html) and additionally load the math plugin:
-
-```html
-<script src="path/to/node_modules/@multiverse-io/ckeditor5-math/build/math.js"></script>
-<script>
-CKEditor5.editorClassic.ClassicEditor
-	.create(editorElement, {
-		plugins: [
-			CKEditor5.math.Math,
-			...
-		],
-		...
-	});
-</script>
-```
 
 ## Configuration & Usage
 
@@ -328,12 +310,7 @@ yarn run start --language=de
 
 ### `test`
 
-Allows executing unit tests for the package, specified in the `tests/` directory. The command accepts the following modifiers:
-
-* `--coverage` &ndash; to create the code coverage report,
-* `--watch` &ndash; to observe the source files (the command does not end after executing tests),
-* `--source-map` &ndash; to generate source maps of sources,
-* `--verbose` &ndash; to print additional webpack logs.
+Runs the browser-based Vitest suite from the `tests/` directory.
 
 Examples:
 
@@ -341,8 +318,8 @@ Examples:
 # Execute tests.
 yarn run test
 
-# Generate code coverage report after each change in the sources.
-yarn run test --coverage --test
+# Generate a one-off coverage report.
+yarn run test --run --coverage
 ```
 
 ### `lint`
@@ -367,61 +344,53 @@ Examples:
 yarn run stylelint
 ```
 
-### `build:dist`
+### `build`
 
-Creates npm and browser builds of your plugin. These builds can be added to the editor by following the [Configuring CKEditor 5 features](https://ckeditor.com/docs/ckeditor5/latest/getting-started/setup/configuration.html) guide.
-
-Examples:
-
-```bash
-# Builds the `npm` and browser files thats are ready to publish.
-npm run build:dist
-```
-
-### `translations:collect`
-
-Collects translation messages (arguments of the `t()` function) and context files, then validates whether the provided values do not interfere with the values specified in the `@ckeditor/ckeditor5-core` package.
-
-The task may end with an error if one of the following conditions is met:
-
-* Found the `Unused context` error &ndash; entries specified in the `lang/contexts.json` file are not used in source files. They should be removed.
-* Found the `Context is duplicated for the id` error &ndash; some of the entries are duplicated. Consider removing them from the `lang/contexts.json` file, or rewrite them.
-* Found the `Context for the message id is missing` error &ndash; entries specified in source files are not described in the `lang/contexts.json` file. They should be added.
+Creates the declaration, npm, and browser builds of the plugin.
 
 Examples:
 
 ```bash
-yarn run translations:collect
+# Build everything that is ready to publish.
+yarn run build
 ```
 
-### `translations:download`
+### `build:npm`
 
-Download translations from the Transifex server. Depending on users' activity in the project, it creates translation files used for building the editor.
-
-The task requires passing the URL to Transifex API. Usually, it matches the following format: `https://www.transifex.com/api/2/project/[PROJECT_SLUG]`.
-
-To avoid passing the `--transifex` option whenever you call the command, you can store it in `package.json`, next to the `ckeditor5-package-tools translations:download` command.
-
-Examples:
+Creates the ESM package that is published to npm.
 
 ```bash
-yarn run translations:download --transifex [API URL]
+yarn run build:npm
 ```
 
-### `translations:upload`
+### `build:browser`
 
-Uploads translation messages onto the Transifex server. It allows users to create translations into other languages using the Transifex platform.
-
-The task requires passing the URL to the Transifex API. Usually, it matches the following format: `https://www.transifex.com/api/2/project/[PROJECT_SLUG]`.
-
-To avoid passing the `--transifex` option whenever you call the command, you can store it in `package.json`, next to the `ckeditor5-package-tools translations:upload` command.
-
-Examples:
+Creates the browser bundle in `dist/browser/`.
 
 ```bash
-yarn run translations:upload --transifex [API URL]
+yarn run build:browser
 ```
 
-### `ts:build` and `ts:clear`
+### `build:types`
 
-These scripts compile TypeScript and remove the compiled files. They are used in the aforementioned life cycle scripts, and there is no need to call them manually.
+Generates the TypeScript declaration files in `dist/`.
+
+```bash
+yarn run build:types
+```
+
+### `translations:synchronize`
+
+Collects translation messages and synchronizes the package translation files.
+
+```bash
+yarn run translations:synchronize
+```
+
+### `translations:validate`
+
+Validates translation contexts without updating files.
+
+```bash
+yarn run translations:validate
+```
