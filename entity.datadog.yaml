@@ -1,0 +1,18 @@
+# Datadog Software Catalog entity for this repository.
+# componentOf joins it to its estate's system, which datadog-tenant defines
+# from the estate registry. Do not define a system here.
+apiVersion: v3
+kind: repository
+metadata:
+  name: ckeditor5-math
+  displayName: CKEditor 5 math
+  description: Math feature for CKEditor 5.
+  owner: async-learning
+  links:
+    - name: Source code
+      type: repo
+      provider: Github
+      url: https://github.com/Multiverse-io/ckeditor5-math
+spec:
+  componentOf:
+    - system:learning-content
