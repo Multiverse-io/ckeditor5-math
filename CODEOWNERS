@@ -1,6 +1,2 @@
-# These owners will be the default owners for everything in
-# the repo. Unless a later match takes precedence,
-# @Multiverse-io/async-learning will be requested for
-# review when someone opens a pull request.
-
-*       @Multiverse-io/async-learning
+# Owners come from the estate registry: estates/learning-content/estate.yaml
+* @Multiverse-io/estate-learning-content
